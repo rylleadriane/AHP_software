@@ -273,24 +273,21 @@ def dashboard():
     ctk.CTkLabel(left_panel, text="Controls", font=SUBHEADER_FONT).pack(pady=(12,6))
     ctk.CTkButton(left_panel, text="Start AHP", command=lambda: start_ranking(), width=220).pack(pady=6)
     ctk.CTkButton(left_panel, text="Save Results", command=lambda: save_results(), width=220).pack(pady=6)
-    ctk.CTkButton(left_panel, text="Exit", command=app.destroy, width=220, fg_color="#D9534F").pack(side="bottom", pady=20)
+    ctk.CTkButton(left_panel, text="Exit", command=app.destroy, width=220, fg_color=DANGER).pack(side="bottom", pady=20)
 
     clear_screen()
-    dash = ctk.CTkFrame(main_content, fg_color="#FAFAFA", corner_radius=8)
-    dash.pack(fill="both", expand=True, padx=12, pady=12)
-    ctk.CTkLabel(dash, text="Identify Potential Groundwater Recharge Zones", font=("Arial", 28, "bold")).pack(anchor="w", pady=(16,6), padx=20)
-    ctk.CTkLabel(dash, text="Perform AHP to derive parameter weights and check consistency ratio (CR ≤ 0.1).", font=("Arial", 18)).pack(anchor="w", padx=20)
 
-    clear_screen()
+    # main dark card (matches the 'Geology' look)
     dash = ctk.CTkFrame(main_content, fg_color=CARD, corner_radius=8)
     dash.pack(fill="both", expand=True, padx=12, pady=12)
 
+    # Title + subtitle
     ctk.CTkLabel(
         dash,
         text="Identify Potential Groundwater Recharge Zones",
         font=("Arial", 28, "bold"),
         text_color=TEXT_PRIMARY,
-        fg_color="transparent"
+        anchor="w"
     ).pack(anchor="w", pady=(16, 6), padx=20)
 
     ctk.CTkLabel(
@@ -298,13 +295,12 @@ def dashboard():
         text="Perform AHP to derive parameter weights and check consistency ratio (CR ≤ 0.1).",
         font=("Arial", 18),
         text_color=TEXT_MUTED,
-        fg_color="transparent"
+        anchor="w"
     ).pack(anchor="w", padx=20)
 
-
     # ---------------- Definitions section (tighter wrap + padding) ----------------
-    defs_frame = ctk.CTkFrame(dash, corner_radius=8, fg_color="#FFFFFF")
-    defs_frame.pack(fill="x", padx=20, pady=(10,8))
+    defs_frame = ctk.CTkFrame(dash, corner_radius=8, fg_color=CARD)
+    defs_frame.pack(fill="x", padx=20, pady=(12,10))
     defs_frame.grid_columnconfigure(0, weight=1)
 
     # Wrap length chosen conservatively to avoid clipping at the right border.
@@ -313,12 +309,12 @@ def dashboard():
     DEF_PAD_Y = (10, 12)
 
     def create_def_card(parent, title, text):
-        card = ctk.CTkFrame(parent, corner_radius=8)
+        card = ctk.CTkFrame(parent, corner_radius=8, fg_color=CARD)
         card.pack(fill="x", padx=8, pady=8)
         # title
-        ctk.CTkLabel(card, text=title, font=("Arial", 14, "bold")).pack(anchor="w", padx=12, pady=(8,4))
+        ctk.CTkLabel(card, text=title, font=("Arial", 14, "bold"), text_color=TEXT_PRIMARY).pack(anchor="w", padx=12, pady=(8,4))
         # description label with conservative wraplength and extra internal padding
-        lbl = ctk.CTkLabel(card, text=text, wraplength=DEF_WRAP, justify="left", anchor="w", font=BODY_FONT)
+        lbl = ctk.CTkLabel(card, text=text, wraplength=DEF_WRAP, justify="left", anchor="w", font=BODY_FONT, text_color=TEXT_MUTED)
         # ensure the label takes available space and has internal padding to keep text away from borders
         lbl.pack(fill="both", expand=True, padx=DEF_PAD_X, pady=DEF_PAD_Y)
         return card
@@ -344,16 +340,19 @@ def dashboard():
     create_def_card(defs_frame, "Consistency Ratio — definition", cr_text)
     # ------------------------------------------------------------
 
+    # If weights present show latest CR and button
     if state['weights'] is not None:
         cr_color = "#1E8449" if state['CR'] <= 0.1 else "#C0392B"
         ctk.CTkLabel(dash, text=f"Latest CR: {state['CR']:.4f}", text_color=cr_color, font=("Arial", 16)).pack(anchor="w", pady=10, padx=20)
-        ctk.CTkButton(dash, text="View Results", command=show_results).pack(pady=8, padx=20)
+        ctk.CTkButton(dash, text="View Results", command=show_results, width=140).pack(pady=8, padx=20, anchor="w")
+
     tips = (
         "1. Rank parameters 1 (most important) to 7 (least important).\n"
         "2. Proceed through pairwise comparisons following Saaty's scale.\n"
         "3. If CR > 0.1, review suggested inconsistent pairs."
     )
-    ctk.CTkLabel(dash, text=tips, justify="left", font=("Arial", 16)).pack(anchor="w", pady=10, padx=20)
+    ctk.CTkLabel(dash, text=tips, justify="left", font=("Arial", 16), text_color=TEXT_MUTED).pack(anchor="w", pady=12, padx=20)
+
 
 # -------------------- Ranking Screen --------------------
 def start_ranking():
