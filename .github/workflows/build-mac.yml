@@ -1,0 +1,33 @@
+name: Build macOS .app
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller customtkinter numpy
+
+      - name: Build mac app
+        run: |
+          pyinstaller --onedir --windowed --name "AHP_Groundwater" gui_grounwater2.py
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-app
+          path: dist/
