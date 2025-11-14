@@ -1,0 +1,1 @@
+print ('Rise and Shine!')
