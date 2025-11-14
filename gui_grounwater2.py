@@ -5,13 +5,23 @@ import csv
 import math
 
 # -------------------- Appearance --------------------
-ctk.set_appearance_mode("System")
+ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
+
+# color palette (tweak to taste)
+BG = "#0F1113"             # app background (very dark)
+PANEL = "#1F2426"          # main panels (dark gray)
+CARD = "#232628"           # content card color
+ACCENT = "#2C5F8A"         # teal/blue accent (buttons, info circles)
+PRIMARY_BTN = ACCENT
+DANGER = "#D9534F"         # red for Exit button
+TEXT_PRIMARY = "#ECEFF1"   # primary text color (off-white)
+TEXT_MUTED = "#BFC9CC"     # muted text
 
 # -------------------- App Window --------------------
 app = ctk.CTk()
 app.title("AHP — Groundwater Recharge Potential")
-app.geometry("1200x850")
+app.geometry("1300x850")
 
 # -------------------- Fonts --------------------
 HEADER_FONT = ("Arial", 24, "bold")
@@ -271,15 +281,36 @@ def dashboard():
     ctk.CTkLabel(dash, text="Identify Potential Groundwater Recharge Zones", font=("Arial", 28, "bold")).pack(anchor="w", pady=(16,6), padx=20)
     ctk.CTkLabel(dash, text="Perform AHP to derive parameter weights and check consistency ratio (CR ≤ 0.1).", font=("Arial", 18)).pack(anchor="w", padx=20)
 
+    clear_screen()
+    dash = ctk.CTkFrame(main_content, fg_color=CARD, corner_radius=8)
+    dash.pack(fill="both", expand=True, padx=12, pady=12)
+
+    ctk.CTkLabel(
+        dash,
+        text="Identify Potential Groundwater Recharge Zones",
+        font=("Arial", 28, "bold"),
+        text_color=TEXT_PRIMARY,
+        fg_color="transparent"
+    ).pack(anchor="w", pady=(16, 6), padx=20)
+
+    ctk.CTkLabel(
+        dash,
+        text="Perform AHP to derive parameter weights and check consistency ratio (CR ≤ 0.1).",
+        font=("Arial", 18),
+        text_color=TEXT_MUTED,
+        fg_color="transparent"
+    ).pack(anchor="w", padx=20)
+
+
     # ---------------- Definitions section (tighter wrap + padding) ----------------
     defs_frame = ctk.CTkFrame(dash, corner_radius=8, fg_color="#FFFFFF")
     defs_frame.pack(fill="x", padx=20, pady=(10,8))
     defs_frame.grid_columnconfigure(0, weight=1)
 
     # Wrap length chosen conservatively to avoid clipping at the right border.
-    DEF_WRAP = 800
-    DEF_PAD_X = 14
-    DEF_PAD_Y = (8, 10)
+    DEF_WRAP = 880
+    DEF_PAD_X = 16
+    DEF_PAD_Y = (10, 12)
 
     def create_def_card(parent, title, text):
         card = ctk.CTkFrame(parent, corner_radius=8)
@@ -333,8 +364,10 @@ def start_ranking():
     ctk.CTkLabel(top_frame, text="Hover or click the info (i) button to read each parameter’s description.", font=ITALIC_FONT).pack(anchor="w", pady=(6,0))
 
     rank_vars = {}
-    grid = ctk.CTkFrame(main_content)
-    grid.pack(fill="x", padx=12, pady=(6,12))
+
+    # renamed to avoid confusion with tkinter.grid method
+    rank_grid = ctk.CTkFrame(main_content)
+    rank_grid.pack(fill="x", padx=12, pady=(6,12))
 
     # Static bottom description box (unchanged)
     desc_frame = ctk.CTkFrame(main_content, corner_radius=8, width=880, height=220)
@@ -354,15 +387,17 @@ def start_ranking():
         desc_title.configure(text=param)
         desc_label.configure(text=PARAMETER_DESCRIPTIONS[param])
 
+    # create rows for each parameter
     for i, p in enumerate(PARAMETERS):
-        row = ctk.CTkFrame(grid)
+        row = ctk.CTkFrame(rank_grid)
         row.pack(fill="x", pady=6)
         var = ctk.StringVar(value="1")
-        ctk.CTkOptionMenu(row, values=[str(i) for i in range(1,8)], variable=var, width=110, font=BODY_FONT).pack(side="left", padx=(4,8))
+        # OptionMenu values should be strings; explicitly set width to prevent squeezing
+        ctk.CTkOptionMenu(row, values=[str(i) for i in range(1,8)], variable=var, width=100, font=BODY_FONT).pack(side="left", padx=(4,8))
         info_btn = ctk.CTkButton(row, text="i", width=36, height=36, corner_radius=18, fg_color="#2C5F8A", font=("Arial", 12, "bold"), command=lambda param=p: update_description(param))
         info_btn.pack(side="left", padx=(4,8))
         info_btn.bind("<Enter>", lambda e, param=p: update_description(param))
-        ctk.CTkLabel(row, text=p, width=36, anchor="w", font=BODY_FONT).pack(side="left")
+        ctk.CTkLabel(row, text=p, anchor="w", font=BODY_FONT).pack(side="left", padx=(8,0))
         rank_vars[p] = var
 
     state['rank_vars'] = rank_vars
@@ -468,8 +503,10 @@ def open_pairwise():
 
     left_frame = ctk.CTkFrame(layout)
     left_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+    # ensure there are enough rows configured so grid behaves predictably
     left_frame.grid_rowconfigure(0, weight=1)
-    left_frame.grid_rowconfigure(1, weight=1)
+    left_frame.grid_rowconfigure(1, weight=0)
+    left_frame.grid_rowconfigure(2, weight=1)
 
     # ---------- PADDING/WRAP FIXES APPLIED ONLY TO THESE TWO STACKED CARDS ----------
     card_top = ctk.CTkFrame(left_frame, corner_radius=8)
@@ -487,7 +524,7 @@ def open_pairwise():
     )
     desc_top.pack(fill="both", expand=True)
 
-    # spacer
+    # spacer (row 1)
     spacer = ctk.CTkFrame(left_frame, height=6, fg_color="transparent")
     spacer.grid(row=1, column=0, sticky="ew")
 
